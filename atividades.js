@@ -2,8 +2,8 @@
 // e coloque o jogo em atividades/<pasta>/index.html.
 window.MISSOES = [
   {
-    pasta: "simulado-saeb-matematica",
-    titulo: "Simulado SAEB",
+    pasta: "simulado-sispae-matematica",
+    titulo: "Simulado SisPAE",
     disciplina: "Matemática",
     serie: "2º ano",
     icone: "🍊",

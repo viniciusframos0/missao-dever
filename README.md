@@ -7,7 +7,7 @@ O dever de casa virou jogo. Cada missão é feita a partir de uma atividade real
 ## Missões
 | Missão | Disciplina | Série |
 |---|---|---|
-| Simulado SAEB | Matemática | 2º ano |
+| Simulado SisPAE | Matemática | 2º ano |
 | Leilão de Jardim | Português | 2º ano |
 
 ## Como adicionar uma missão
