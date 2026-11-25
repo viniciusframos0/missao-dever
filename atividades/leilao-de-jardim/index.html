@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d9f1ff">
+<title>Jardim das Letras</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap">
+<style>
+/* Layout: one-column garden path (like a trail of flowers) → full-screen lesson card → harvest screen. Single bright daytime look, by choice. */
+:root{
+  --sky:#d9f1ff; --sky2:#f3fbff;
+  --leaf:#3fa34d; --leaf-d:#2b7a37; --leaf-l:#c9efc6;
+  --sun:#ffc93c; --sun-d:#e0a400;
+  --petal:#ff7a8a; --petal-d:#d9566a;
+  --ink:#24323d; --ink2:#5b6c78;
+  --card:#ffffff; --soil:#a8744f; --lock:#c7d3db;
+  --display:"Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+  --body:"Nunito", system-ui, sans-serif;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:linear-gradient(180deg,var(--sky) 0%,var(--sky2) 55%,#e7f7df 100%);background-attachment:fixed;color:var(--ink);font-family:var(--body);-webkit-tap-highlight-color:transparent;user-select:none}
+.wrap{max-width:540px;margin:0 auto;min-height:100%;padding-block:12px 40px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:14px}
+button{font-family:var(--display);cursor:pointer;border:0;color:inherit}
+button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;align-items:center;gap:8px}
+.brand h1{font-size:1.7rem;color:var(--leaf-d)}
+.pill{background:var(--card);border-radius:999px;padding:6px 14px;font-family:var(--display);font-weight:800;font-size:1.15rem;box-shadow:0 3px 0 rgba(0,0,0,.08);display:flex;gap:6px;align-items:center}
+.homework{background:var(--card);border:3px dashed var(--leaf-l);border-radius:18px;padding:10px 14px;font-size:.95rem;color:var(--ink2);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.homework b{color:var(--ink)}
+
+/* mascot */
+.mascot{display:flex;align-items:flex-end;gap:10px}
+.mascot .turtle{font-size:3.4rem;line-height:1;animation:bob 2.4s ease-in-out infinite}
+.bubble{background:var(--card);border-radius:20px 20px 20px 6px;padding:10px 14px;font-weight:700;font-size:1.05rem;box-shadow:0 3px 0 rgba(0,0,0,.08);flex:1;min-width:0}
+@keyframes bob{50%{transform:translateY(-5px) rotate(-3deg)}}
+
+/* path */
+.path{position:relative;display:flex;flex-direction:column;align-items:center;gap:26px;padding:10px 0 20px}
+.node{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.node:nth-child(4n+2){transform:translateX(70px)}
+.node:nth-child(4n+4){transform:translateX(-70px)}
+.flower{width:92px;height:92px;border-radius:50%;font-size:2.6rem;display:grid;place-items:center;background:var(--sun);box-shadow:0 7px 0 var(--sun-d);transition:transform .15s}
+.flower:active{transform:translateY(5px);box-shadow:0 2px 0 var(--sun-d)}
+.node.done .flower{background:var(--leaf);box-shadow:0 7px 0 var(--leaf-d)}
+.node.locked .flower{background:var(--lock);box-shadow:0 7px 0 #a6b4be;filter:grayscale(1);cursor:not-allowed}
+.node.current .flower{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.07)}}
+.node .label{font-family:var(--display);font-weight:700;font-size:1.05rem;background:var(--card);padding:2px 12px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.06)}
+.node .stars{font-size:1rem;letter-spacing:2px;min-height:1.2em}
+.start-tag{position:absolute;top:-30px;background:var(--petal);color:#fff;font-family:var(--display);font-weight:800;padding:2px 12px;border-radius:12px;font-size:.95rem;animation:bob 1.4s ease-in-out infinite}
+
+/* lesson */
+.lesson{display:flex;flex-direction:column;gap:14px;flex:1}
+.lbar{display:flex;align-items:center;gap:10px}
+.x{background:var(--card);width:44px;height:44px;border-radius:50%;font-size:1.3rem;box-shadow:0 3px 0 rgba(0,0,0,.08);flex:none}
+.prog{flex:1;height:18px;background:#fff;border-radius:999px;overflow:hidden;box-shadow:inset 0 2px 0 rgba(0,0,0,.06)}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--leaf),#6fd16a);border-radius:999px;transition:width .4s}
+.qcard{background:var(--card);border-radius:26px;padding:18px 16px 20px;box-shadow:0 6px 0 rgba(0,0,0,.07);display:flex;flex-direction:column;gap:16px}
+.qhead{display:flex;gap:10px;align-items:flex-start}
+.qhead h2{font-size:1.5rem;flex:1;min-width:0}
+.speak{background:var(--sky);width:52px;height:52px;border-radius:16px;font-size:1.6rem;flex:none;box-shadow:0 4px 0 #a9d6f0}
+.speak:active{transform:translateY(3px);box-shadow:0 1px 0 #a9d6f0}
+.wordpic{display:flex;flex-direction:column;align-items:center;gap:8px}
+.wordpic .pic{font-size:3.6rem;line-height:1}
+.tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.tile{width:40px;height:50px;border-radius:12px;background:#fff7d6;border:3px solid var(--sun);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.6rem;transition:transform .15s, background .15s}
+.tile.hl{background:var(--sun);transform:translateY(-4px)}
+.tile.tap{cursor:pointer}
+.tile.counted{background:var(--leaf-l);border-color:var(--leaf)}
+.tile .n{position:absolute}
+.counter{font-family:var(--display);font-weight:800;font-size:1.3rem;text-align:center;color:var(--leaf-d);min-height:1.4em}
+.opts{display:grid;gap:12px}
+.opts.letters{grid-template-columns:repeat(auto-fit,minmax(78px,1fr))}
+.opt{background:#fff;border:3px solid #dbe5ec;border-radius:18px;padding:14px 12px;font-size:1.35rem;font-weight:700;box-shadow:0 5px 0 #dbe5ec;text-align:center;transition:transform .1s}
+.opts.letters .opt{font-size:2rem;padding:10px}
+.opt:active{transform:translateY(4px);box-shadow:0 1px 0 #dbe5ec}
+.opt.sel{border-color:#5aa9e6;background:#e9f5ff;box-shadow:0 5px 0 #8cc4ee}
+.opt.right{border-color:var(--leaf);background:var(--leaf-l);box-shadow:0 5px 0 var(--leaf)}
+.opt.wrong{border-color:var(--petal);background:#ffe3e6;box-shadow:0 5px 0 var(--petal);opacity:.6;animation:shake .4s}
+.opt[disabled]{cursor:default}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.hint{font-size:1rem;color:var(--ink2);text-align:center;font-weight:700}
+.baskets{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.basket{background:#f3e2d3;border:3px solid var(--soil);border-radius:14px;padding:6px 10px;font-family:var(--display);font-weight:700;font-size:.95rem;min-width:88px;text-align:center;color:#6b4429}
+.basket.now{background:var(--sun);border-color:var(--sun-d);color:var(--ink)}
+.basket.full{background:var(--leaf-l);border-color:var(--leaf);color:var(--leaf-d)}
+
+/* feedback drawer */
+.fb{position:fixed;left:0;right:0;bottom:0;padding:16px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));transform:translateY(110%);transition:transform .3s cubic-bezier(.2,1.3,.5,1);z-index:20}
+.fb.show{transform:none}
+.fb .in{max-width:540px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.fb.ok{background:#d7f5d2}
+.fb.no{background:#ffe1e5}
+.fb h3{font-size:1.5rem}
+.fb.ok h3{color:var(--leaf-d)} .fb.no h3{color:var(--petal-d)}
+.fb p{margin:0;font-weight:700;font-size:1.05rem}
+.big{width:100%;padding:16px;border-radius:18px;font-size:1.4rem;font-weight:800;color:#fff;background:var(--leaf);box-shadow:0 6px 0 var(--leaf-d)}
+.big:active{transform:translateY(4px);box-shadow:0 2px 0 var(--leaf-d)}
+.big.pink{background:var(--petal);box-shadow:0 6px 0 var(--petal-d)}
+.big.sun{background:var(--sun);color:var(--ink);box-shadow:0 6px 0 var(--sun-d)}
+.big[disabled]{background:var(--lock);box-shadow:0 6px 0 #a6b4be}
+
+/* end screens */
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding-top:20px}
+.trophy{font-size:5rem;animation:bob 2s ease-in-out infinite}
+.bigstars{font-size:3rem;letter-spacing:6px}
+.sheet{background:var(--card);border-radius:20px;padding:14px;box-shadow:0 5px 0 rgba(0,0,0,.07);width:100%;text-align:left}
+.sheet h3{font-size:1.25rem;margin-bottom:8px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem;font-variant-numeric:tabular-nums}
+th,td{border:2px solid #e3eaef;padding:6px;text-align:center}
+th{background:var(--sky);font-family:var(--display);font-size:.85rem;letter-spacing:.03em}
+td:first-child{text-align:left;font-weight:800}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.boxes div{border:3px solid var(--ink2);border-radius:12px;padding:6px 10px}
+.boxes small{display:block;color:var(--ink2);font-weight:800;font-size:.8rem;letter-spacing:.05em}
+.boxes b{font-family:var(--display);font-size:1.25rem}
+.reset{background:none;color:var(--ink2);font-family:var(--body);font-weight:700;text-decoration:underline;padding:8px}
+
+.petal{position:fixed;top:-40px;font-size:1.8rem;pointer-events:none;z-index:30;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+.hub{display:inline-block;font-family:var(--display);font-weight:700;font-size:.95rem;color:var(--ink2);text-decoration:none;background:var(--card);padding:4px 12px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.06);align-self:flex-start}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="fb" id="fb"><div class="in"><h3 id="fbT"></h3><p id="fbP"></p><button class="big" id="fbB">Continuar</button></div></div>
+
+<script>
+// ---------- conteúdo da atividade (folha "1º Dia – Língua Portuguesa") ----------
+const W = {
+  SAPO:{pic:"🐸"}, BORBOLETAS:{pic:"🦋"}, SOL:{pic:"☀️"}, PRIMAVERA:{pic:"🌸"}, CIGARRA:{pic:"🦗"}
+};
+const WORDS = ["SAPO","BORBOLETAS","SOL","PRIMAVERA","CIGARRA"];
+const repeats = w => [...new Set([...w].filter((c,i,a)=>a.indexOf(c)!==a.lastIndexOf(c)))];
+
+const LEVELS = [
+  {id:"poema", icon:"📖", name:"O poema", intro:"Leia o poema da sua folha com calma. Depois, me conte!",
+   qs:[
+    {t:"choice", q:"Qual é o nome do poema que você leu?", opts:["As abelhas","Leilão de Jardim","As borboletas"], a:"Leilão de Jardim"},
+    {t:"choice", q:"Quem escreveu este poema?", opts:["Cecília Meireles","Eva Furnari","Ruth Rocha"], a:"Cecília Meireles"}
+   ]},
+  {id:"inicial", icon:"🅰️", name:"Primeira letra", intro:"Vamos achar a PRIMEIRA letra de cada palavra!",
+   qs:[
+    {t:"letter", w:"SAPO", pos:"first", opts:["P","S","O"]},
+    {t:"letter", w:"BORBOLETAS", pos:"first", opts:["B","D","S"]},
+    {t:"letter", w:"SOL", pos:"first", opts:["L","C","S"]},
+    {t:"letter", w:"PRIMAVERA", pos:"first", opts:["B","P","R"]},
+    {t:"letter", w:"CIGARRA", pos:"first", opts:["S","G","C"]}
+   ]},
+  {id:"final", icon:"🔚", name:"Última letra", intro:"Agora a ÚLTIMA letra, lá no finalzinho da palavra!",
+   qs:[
+    {t:"letter", w:"SAPO", pos:"last", opts:["A","O","S"]},
+    {t:"letter", w:"BORBOLETAS", pos:"last", opts:["A","B","S"]},
+    {t:"letter", w:"SOL", pos:"last", opts:["L","S","O"]},
+    {t:"letter", w:"PRIMAVERA", pos:"last", opts:["E","A","R"]},
+    {t:"letter", w:"CIGARRA", pos:"last", opts:["R","A","O"]}
+   ]},
+  {id:"contar", icon:"🔢", name:"Contar letras", intro:"Toque em cada letra para contar. Uma de cada vez!",
+   qs: WORDS.map(w=>({t:"count", w}))},
+  {id:"repetem", icon:"👯", name:"Letras gêmeas", intro:"Tem letra que aparece mais de uma vez? São as letras gêmeas!",
+   qs: WORDS.map(w=>({t:"repeat", w}))},
+  {id:"cestas", icon:"🧺", name:"Cestas do jardim", intro:"Cada cesta guarda uma palavra. Qual palavra cabe em cada cesta?",
+   qs:[3,4,7,9].map(n=>({t:"basket", n}))}
+];
+
+// ---------- contador de acessos (GoatCounter: sem cookies, sem dados pessoais) ----------
+const GOAT = "missaodever";
+const JOGO = "leilao-de-jardim";
+(function(){ if(!GOAT) return; try{ const s=document.createElement("script"); s.async=true; s.src="https://gc.zgo.at/count.js"; s.dataset.goatcounter=`https://${GOAT}.goatcounter.com/count`; document.head.appendChild(s); }catch(e){} })();
+const _fila=[];
+function track(evento){
+  const ev={path:`${JOGO}/${evento}`, title:evento, event:true};
+  try{ if(window.goatcounter && window.goatcounter.count){ while(_fila.length) window.goatcounter.count(_fila.shift()); window.goatcounter.count(ev); } else _fila.push(ev); }catch(e){}
+}
+
+// ---------- estado salvo ----------
+const KEY="jardim-letras-v1";
+let save={stars:{}};
+try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.stars) save=s; }catch(e){}
+const persist=()=>{ try{ localStorage.setItem(KEY, JSON.stringify(save)); }catch(e){} };
+const totalStars=()=>Object.values(save.stars).reduce((a,b)=>a+b,0);
+const unlockedIdx=()=>{ let i=0; while(i<LEVELS.length && save.stars[LEVELS[i].id]) i++; return i; };
+
+// ---------- som e voz ----------
+let ac=null;
+function tone(freqs, dur=.12, type="sine", gap=.09){
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{
+      const o=ac.createOscillator(), g=ac.createGain(), t=ac.currentTime+i*gap;
+      o.type=type; o.frequency.value=f; g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(.25,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+dur+.1);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t+dur+.15);
+    });
+  }catch(e){}
+}
+const sfx={ ok:()=>tone([660,880,1100]), no:()=>tone([300,220],.15,"triangle",.12), tap:()=>tone([520],.06,"triangle"), win:()=>tone([523,659,784,1046,1318],.16,"sine",.11) };
+let voice=null;
+function pickVoice(){ try{ const v=speechSynthesis.getVoices(); voice=v.find(x=>/pt-BR/i.test(x.lang))||v.find(x=>/^pt/i.test(x.lang))||null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }catch(e){}
+function say(text){
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="pt-BR"; if(voice) u.voice=voice; u.rate=.88; u.pitch=1.1; speechSynthesis.speak(u); }catch(e){}
+}
+
+// ---------- utilidades ----------
+const $app=document.getElementById("app");
+const h=(html)=>{ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; };
+const shuffle=a=>{ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const PRAISE=["Muito bem!","Isso aí!","Arrasou!","Perfeito!","Que esperto!","Show de bola!"];
+const TRY=["Quase! Tente de novo.","Opa! Olhe com calma.","Vamos tentar outra vez!"];
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function petals(n=24){
+  const set=["🌸","🌼","🍃","⭐","🦋","🌷"];
+  for(let i=0;i<n;i++){ const p=document.createElement("span"); p.className="petal"; p.textContent=rnd(set);
+    p.style.left=Math.random()*100+"vw"; p.style.animationDuration=(2+Math.random()*2)+"s"; p.style.animationDelay=Math.random()*.6+"s";
+    document.body.appendChild(p); setTimeout(()=>p.remove(),5000); }
+}
+
+// ---------- tela: trilha ----------
+function showMap(){
+  hideFb();
+  const u=unlockedIdx();
+  const allDone=u>=LEVELS.length;
+  $app.innerHTML="";
+  $app.appendChild(h(`<a class="hub" href="../../" aria-label="Voltar para todas as missões">← Missões</a>`));
+  $app.appendChild(h(`<div class="top"><div class="brand"><span style="font-size:2rem">🌻</span><h1>Jardim das Letras</h1></div><div class="pill">⭐ ${totalStars()}</div></div>`));
+  $app.appendChild(h(`<div class="homework"><span>Dever de casa · <b>Língua Portuguesa</b></span><span><b>1º dia</b> · Leilão de Jardim</span></div>`));
+  const msg = allDone ? "Você terminou o jardim todo! Toque em 🏆 para ver suas respostas e copiar na folha."
+            : u===0 ? "Oi! Eu sou a Tuca. Pegue sua folha e leia o poema. Depois toque na flor que está pulando!"
+            : `Muito bem! Falta${LEVELS.length-u>1?"m":""} ${LEVELS.length-u} flor${LEVELS.length-u>1?"es":""} para terminar o dever.`;
+  const m=h(`<div class="mascot"><div class="turtle">🐢</div><div class="bubble">${msg}</div></div>`);
+  m.onclick=()=>say(msg);
+  $app.appendChild(m);
+  const path=h(`<div class="path"></div>`);
+  LEVELS.forEach((L,i)=>{
+    const st=save.stars[L.id]||0, locked=i>u, cur=i===u;
+    const n=h(`<div class="node ${st?"done":""} ${locked?"locked":""} ${cur?"current":""}">
+      ${cur?'<span class="start-tag">COMEÇAR</span>':""}
+      <button class="flower" aria-label="${L.name}">${locked?"🔒":L.icon}</button>
+      <span class="label">${L.name}</span>
+      <span class="stars">${st?"⭐".repeat(st)+"☆".repeat(3-st):""}</span></div>`);
+    n.querySelector("button").onclick=()=>{ if(locked){ sfx.no(); say("Termine a flor de antes primeiro!"); return;} sfx.tap(); startLevel(i); };
+    path.appendChild(n);
+  });
+  const fin=h(`<div class="node ${allDone?"current":"locked"}"><button class="flower" style="background:${allDone?"var(--petal)":""};box-shadow:${allDone?"0 7px 0 var(--petal-d)":""}">🏆</button><span class="label">Respostas</span></div>`);
+  fin.querySelector("button").onclick=()=>{ if(!allDone){ sfx.no(); say("Complete todas as flores primeiro!"); return;} showSummary(); };
+  path.appendChild(fin);
+  $app.appendChild(path);
+  if(totalStars()) { const r=h(`<button class="reset">Recomeçar do zero</button>`); r.onclick=confirmReset; $app.appendChild(r); }
+}
+function confirmReset(){
+  const box=h(`<div class="qcard" style="text-align:center"><h2>Apagar as estrelas e começar de novo?</h2><div class="opts" style="grid-template-columns:1fr 1fr"><button class="opt" id="no">Não</button><button class="opt" id="yes">Sim, apagar</button></div></div>`);
+  $app.appendChild(box); box.scrollIntoView({behavior:"smooth"});
+  box.querySelector("#no").onclick=()=>box.remove();
+  box.querySelector("#yes").onclick=()=>{ save={stars:{}}; persist(); showMap(); };
+}
+
+// ---------- tela: lição ----------
+let L, qi, mistakes, levelIdx;
+function startLevel(i){ levelIdx=i; L=LEVELS[i]; qi=0; mistakes=0; track(`fase-inicio/${L.id}`); intro(); }
+function lessonFrame(){
+  $app.innerHTML="";
+  const bar=h(`<div class="lbar"><button class="x" aria-label="Sair">✕</button><div class="prog"><i></i></div><div class="pill">${L.icon}</div></div>`);
+  bar.querySelector(".x").onclick=()=>{ try{speechSynthesis.cancel()}catch(e){} showMap(); };
+  $app.appendChild(bar);
+  requestAnimationFrame(()=>bar.querySelector("i").style.width=(qi/L.qs.length*100)+"%");
+  const wrap=h(`<div class="lesson"></div>`); $app.appendChild(wrap); return wrap;
+}
+function intro(){
+  const w=lessonFrame();
+  w.appendChild(h(`<div class="center"><div class="trophy">${L.icon}</div><h2 style="font-size:2rem">${L.name}</h2></div>`));
+  const m=h(`<div class="mascot"><div class="turtle">🐢</div><div class="bubble">${L.intro}</div></div>`); m.onclick=()=>say(L.intro);
+  w.appendChild(m);
+  const b=h(`<button class="big sun">Vamos lá! ▶</button>`); b.onclick=()=>{ sfx.tap(); question(); };
+  w.appendChild(b);
+  say(L.intro);
+}
+function qHead(text){
+  const el=h(`<div class="qhead"><h2>${text}</h2><button class="speak" aria-label="Ouvir">🔊</button></div>`);
+  el.querySelector(".speak").onclick=()=>say(text.replace(/<[^>]+>/g,""));
+  return el;
+}
+function wordBlock(w, opts={}){
+  const el=h(`<div class="wordpic"><div class="pic">${W[w].pic}</div><div class="tiles"></div></div>`);
+  const t=el.querySelector(".tiles");
+  [...w].forEach((c,i)=>{ const s=document.createElement("span"); s.className="tile"; s.textContent=c; s.dataset.i=i; t.appendChild(s); });
+  return el;
+}
+function question(){
+  hideFb();
+  const Q=L.qs[qi], w=lessonFrame();
+  const card=h(`<div class="qcard"></div>`); w.appendChild(card);
+  ({choice:qChoice, letter:qLetter, count:qCount, repeat:qRepeat, basket:qBasket})[Q.t](Q,card);
+}
+function choiceButtons(card, opts, answer, cls, onRight, speakEach){
+  const g=h(`<div class="opts ${cls||""}"></div>`);
+  opts.forEach(o=>{
+    const b=h(`<button class="opt">${o}</button>`);
+    b.onclick=()=>{
+      if(speakEach) say(String(o));
+      if(o===answer){ b.classList.add("right"); g.querySelectorAll(".opt").forEach(x=>x.disabled=true); onRight&&onRight(); right(); }
+      else { b.classList.add("wrong"); b.disabled=true; wrong(); }
+    };
+    g.appendChild(b);
+  });
+  card.appendChild(g);
+}
+function qChoice(Q,card){
+  card.appendChild(qHead(Q.q));
+  card.appendChild(h(`<p class="hint">📄 Olhe na sua folha se precisar!</p>`));
+  choiceButtons(card, Q.opts, Q.a, "", null, true);
+  say(Q.q);
+}
+function qLetter(Q,card){
+  const first=Q.pos==="first";
+  const txt=`Qual é a ${first?"<u>primeira</u>":"<u>última</u>"} letra de ${Q.w}?`;
+  card.appendChild(qHead(txt));
+  const wb=wordBlock(Q.w); card.appendChild(wb);
+  const ans=first?Q.w[0]:Q.w[Q.w.length-1];
+  choiceButtons(card, Q.opts, ans, "letters", ()=>{
+    const tiles=wb.querySelectorAll(".tile"); tiles[first?0:tiles.length-1].classList.add("hl");
+  });
+  say(`Qual é a ${first?"primeira":"última"} letra de ${Q.w.toLowerCase()}?`);
+}
+function qCount(Q,card){
+  const txt=`Quantas letras tem ${Q.w}?`;
+  card.appendChild(qHead(txt));
+  const wb=wordBlock(Q.w); card.appendChild(wb);
+  const cnt=h(`<div class="counter">👆 Toque em cada letra</div>`); card.appendChild(cnt);
+  const holder=h(`<div></div>`); card.appendChild(holder);
+  let c=0; const n=Q.w.length;
+  wb.querySelectorAll(".tile").forEach(t=>{
+    t.classList.add("tap");
+    t.onclick=()=>{
+      if(t.classList.contains("counted")) return;
+      c++; t.classList.add("counted"); t.textContent=t.textContent; sfx.tap(); say(String(c)); cnt.textContent=`Contei: ${c}`;
+      if(c===n){
+        cnt.textContent="Agora escolha o número!";
+        const opts=shuffle([...new Set([n, n-1, n+1, n+2].filter(x=>x>1))].slice(0,3).concat([]));
+        if(!opts.includes(n)) opts[0]=n;
+        choiceButtons(holder, shuffle(opts), n, "letters", null, true);
+      }
+    };
+  });
+  say(`Quantas letras tem ${Q.w.toLowerCase()}? Toque em cada letra para contar.`);
+}
+function qRepeat(Q,card){
+  const txt=`Em ${Q.w}, quais letras aparecem mais de uma vez?`;
+  card.appendChild(qHead(txt));
+  const wb=wordBlock(Q.w); card.appendChild(wb);
+  card.appendChild(h(`<p class="hint">Marque as letras gêmeas. Se nenhuma repetir, toque em “Nenhuma”.</p>`));
+  const ans=repeats(Q.w).sort().join("");
+  const uniq=[...new Set(Q.w)];
+  const g=h(`<div class="opts letters"></div>`); card.appendChild(g);
+  const sel=new Set(); let none=false;
+  const tiles=[...wb.querySelectorAll(".tile")];
+  const paint=()=>{ tiles.forEach(t=>t.classList.toggle("hl", sel.has(t.textContent))); };
+  uniq.forEach(c=>{
+    const b=h(`<button class="opt">${c}</button>`);
+    b.onclick=()=>{ sfx.tap(); say(c); none=false; noneB.classList.remove("sel"); sel.has(c)?sel.delete(c):sel.add(c); b.classList.toggle("sel"); paint(); check.disabled=false; };
+    g.appendChild(b);
+  });
+  const noneB=h(`<button class="opt" style="font-size:1.25rem">Nenhuma</button>`);
+  noneB.onclick=()=>{ sfx.tap(); sel.clear(); g.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel")); none=true; noneB.classList.add("sel"); paint(); check.disabled=false; };
+  const extra=h(`<div class="opts"></div>`); extra.appendChild(noneB); card.appendChild(extra);
+  const check=h(`<button class="big" disabled>Conferir ✔</button>`); card.appendChild(check);
+  check.onclick=()=>{
+    const got=none?"":[...sel].sort().join("");
+    if(got===ans){
+      check.disabled=true; g.querySelectorAll(".opt").forEach(x=>{x.disabled=true; if(x.classList.contains("sel")) x.classList.replace("sel","right");}); if(none) noneB.classList.replace("sel","right");
+      right(ans?`As letras gêmeas são: ${ans.split("").join(" e ")}.`:"Nenhuma letra se repete!");
+    } else {
+      const miss = none ? "Olhe de novo… tem letra que aparece duas vezes!" : (ans==="" ? "Olhe de novo… será que alguma repete mesmo?" : "Conte quantas vezes cada letra aparece.");
+      wrong(miss);
+    }
+  };
+  say(`Em ${Q.w.toLowerCase()}, quais letras aparecem mais de uma vez?`);
+}
+function qBasket(Q,card){
+  const txt=`Qual palavra tem ${Q.n} letras?`;
+  card.appendChild(qHead(txt));
+  const bk=h(`<div class="baskets"></div>`);
+  [3,4,7,9].forEach(n=>{
+    const done=n<Q.n; const word=done?WORDS.find(w=>w.length===n):"";
+    bk.appendChild(h(`<div class="basket ${n===Q.n?"now":""} ${done?"full":""}">🧺 ${n} letras<br>${done?word:"?"}</div>`));
+  });
+  card.appendChild(bk);
+  card.appendChild(h(`<p class="hint">Dica: você já contou as letras na flor 🔢</p>`));
+  const ans=WORDS.find(w=>w.length===Q.n);
+  choiceButtons(card, shuffle(WORDS).map(w=>w), ans, "", null, true);
+  say(txt);
+}
+
+// ---------- feedback ----------
+const fb=document.getElementById("fb"), fbT=document.getElementById("fbT"), fbP=document.getElementById("fbP"), fbB=document.getElementById("fbB");
+function hideFb(){ fb.className="fb"; }
+function right(extra){
+  sfx.ok(); const p=rnd(PRAISE); fbT.textContent="🎉 "+p; fbP.textContent=extra||"";
+  fb.className="fb ok show"; fbB.className="big"; fbB.textContent="Continuar"; fbB.hidden=false;
+  say(p+(extra?" "+extra:""));
+  fbB.onclick=()=>{ sfx.tap(); qi++; qi<L.qs.length?question():finishLevel(); };
+}
+function wrong(msg){
+  mistakes++; sfx.no(); const t=msg||rnd(TRY);
+  fbT.textContent="🐢 Quase!"; fbP.textContent=t; fb.className="fb no show"; fbB.hidden=true;
+  say(t); clearTimeout(wrong.t); wrong.t=setTimeout(hideFb,1800);
+}
+function finishLevel(){
+  hideFb();
+  const st = mistakes===0?3:mistakes<=2?2:1;
+  save.stars[L.id]=Math.max(save.stars[L.id]||0, st); persist();
+  track(`fase-fim/${L.id}/${st}-estrelas`);
+  const w=lessonFrame(); document.querySelector(".prog i").style.width="100%";
+  const msg = st===3?"Uau! Sem nenhum erro!":st===2?"Muito bom! Você é fera!":"Você conseguiu! Cada vez fica mais fácil.";
+  w.appendChild(h(`<div class="center"><div class="trophy">🌻</div><h2 style="font-size:2rem">Flor completa!</h2><div class="bigstars">${"⭐".repeat(st)}${"☆".repeat(3-st)}</div><p class="bubble" style="flex:none">${msg}</p></div>`));
+  const last=levelIdx===LEVELS.length-1;
+  const b=h(`<button class="big">${last?"Ver minhas respostas 🏆":"Voltar ao jardim 🌼"}</button>`);
+  b.onclick=()=>{ sfx.tap(); last?showSummary():showMap(); };
+  w.appendChild(b);
+  sfx.win(); petals(); say("Flor completa! "+msg);
+}
+
+// ---------- tela: respostas para copiar na folha ----------
+function showSummary(){
+  track("jogo-completo");
+  hideFb();
+  $app.innerHTML="";
+  const back=h(`<div class="lbar"><button class="x" aria-label="Voltar">←</button><h2 style="font-size:1.5rem">Hora de copiar na folha!</h2></div>`);
+  back.querySelector(".x").onclick=showMap; $app.appendChild(back);
+  $app.appendChild(h(`<div class="mascot"><div class="turtle">🐢</div><div class="bubble">Você descobriu tudo! Agora pegue o lápis e escreva estas respostas na sua folha.</div></div>`));
+  const rows=WORDS.map(w=>`<tr><td>${W[w].pic} ${w}</td><td>${w[0]}</td><td>${w[w.length-1]}</td><td>${w.length}</td><td>${repeats(w).join(", ")||"nenhuma"}</td></tr>`).join("");
+  $app.appendChild(h(`<div class="sheet"><h3>1 · Circule na folha</h3><p style="margin:0;font-weight:700">A) Leilão de Jardim<br>B) Cecília Meireles</p></div>`));
+  $app.appendChild(h(`<div class="sheet"><h3>2 · Complete o quadro</h3><div class="tbl"><table><tr><th>PALAVRA</th><th>INICIAL</th><th>FINAL</th><th>TOTAL</th><th>REPETEM</th></tr>${rows}</table></div></div>`));
+  $app.appendChild(h(`<div class="sheet"><h3>3 · Palavras com…</h3><div class="boxes">${[3,4,7,9].map(n=>`<div><small>${n} LETRAS</small><b>${WORDS.find(w=>w.length===n)}</b></div>`).join("")}</div></div>`));
+  $app.appendChild(h(`<div class="center" style="padding-top:0"><div class="bigstars">⭐ ${totalStars()} / ${LEVELS.length*3}</div></div>`));
+  petals(30); sfx.win();
+}
+
+showMap();
+</script>
+
+</body>
+</html>

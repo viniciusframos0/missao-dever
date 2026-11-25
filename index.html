@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e3f4ff">
+<title>Missão Dever</title>
+<meta name="description" content="O dever de casa virou jogo.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap">
+<style>
+:root{
+  --sky:#e3f4ff; --sky2:#f6fbff; --grass:#e6f6dc;
+  --ink:#24323d; --ink2:#5b6c78; --line:#dbe5ec; --card:#fff;
+  --sun:#ffc93c; --sun-d:#e0a400; --blue:#2f7fc1;
+  --display:"Baloo 2","Comic Sans MS",system-ui,sans-serif;
+  --body:"Nunito",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(180deg,var(--sky) 0%,var(--sky2) 60%,var(--grass) 100%);background-attachment:fixed;color:var(--ink);font-family:var(--body)}
+.wrap{max-width:620px;margin:0 auto;padding-block:max(20px, env(safe-area-inset-top, 0px)) 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:18px}
+h1,h2{font-family:var(--display);margin:0;line-height:1.05;text-wrap:balance}
+header{display:flex;align-items:center;gap:14px}
+.badge{width:64px;height:64px;border-radius:20px;background:var(--sun);box-shadow:0 6px 0 var(--sun-d);display:grid;place-items:center;font-size:2.2rem;flex:none;transform:rotate(-6deg)}
+header h1{font-size:2.3rem;color:var(--blue)}
+header p{margin:2px 0 0;font-weight:700;color:var(--ink2);font-size:1.05rem}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-family:var(--display);font-weight:700;font-size:1rem;border:3px solid var(--line);background:var(--card);border-radius:999px;padding:4px 14px;cursor:pointer;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip:focus-visible,.card:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+.list{display:flex;flex-direction:column;gap:14px}
+.card{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--card);border-radius:22px;padding:14px;box-shadow:0 6px 0 rgba(0,0,0,.07);text-decoration:none;color:inherit;transition:transform .12s}
+.card:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.07)}
+.ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:2.1rem;flex:none}
+.info{min-width:0;display:flex;flex-direction:column;gap:4px}
+.meta{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-family:var(--display);font-weight:700;font-size:.8rem;letter-spacing:.04em;padding:1px 10px;border-radius:999px;background:var(--sky);color:var(--ink2)}
+.tag.sub{color:#fff}
+.info h2{font-size:1.35rem}
+.info p{margin:0;font-size:.92rem;color:var(--ink2);font-weight:600;line-height:1.35}
+.go{font-family:var(--display);font-weight:800;font-size:1.05rem;color:#fff;border-radius:14px;padding:10px 14px;white-space:nowrap}
+.empty{text-align:center;color:var(--ink2);font-weight:700;padding:24px}
+footer{color:var(--ink2);font-size:.88rem;font-weight:600;text-align:center;line-height:1.5}
+@media (max-width:420px){ .card{grid-template-columns:auto 1fr} .go{grid-column:1/-1;text-align:center} }
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+<script src="atividades.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="badge" aria-hidden="true">🎯</div>
+    <div><h1>Missão Dever</h1><p>O dever de casa virou jogo.</p></div>
+  </header>
+  <div class="filters" id="filters" role="group" aria-label="Filtrar por disciplina"></div>
+  <div class="list" id="list"></div>
+  <footer>Cada missão é feita a partir de uma atividade real da escola.<br>Toque numa missão para jogar. O progresso fica salvo neste aparelho.</footer>
+</div>
+<script>
+// contador de acessos (GoatCounter: sem cookies, sem dados pessoais)
+(function(){ try{ const s=document.createElement("script"); s.async=true; s.src="https://gc.zgo.at/count.js"; s.dataset.goatcounter="https://missaodever.goatcounter.com/count"; document.head.appendChild(s); }catch(e){} })();
+
+const M = window.MISSOES || [];
+const subs = ["Todas", ...new Set(M.map(m=>m.disciplina))];
+let atual = "Todas";
+const $f = document.getElementById("filters"), $l = document.getElementById("list");
+function render(){
+  $f.innerHTML = subs.map(s=>`<button class="chip" aria-pressed="${s===atual}">${s}</button>`).join("");
+  [...$f.children].forEach((b,i)=>b.onclick=()=>{ atual=subs[i]; render(); });
+  const vis = M.filter(m=>atual==="Todas"||m.disciplina===atual);
+  $l.innerHTML = vis.length ? vis.map(m=>`
+    <a class="card" href="atividades/${m.pasta}/">
+      <span class="ic" style="background:${m.cor}22">${m.icone}</span>
+      <span class="info">
+        <span class="meta"><span class="tag sub" style="background:${m.cor}">${m.disciplina}</span><span class="tag">${m.serie}</span><span class="tag">${m.questoes} questões</span></span>
+        <h2>${m.titulo}</h2>
+        <p>${m.resumo}</p>
+      </span>
+      <span class="go" style="background:${m.cor}">Jogar ▶</span>
+    </a>`).join("") : `<div class="empty">Nenhuma missão nesta disciplina ainda.</div>`;
+}
+render();
+</script>
+</body>
+</html>
