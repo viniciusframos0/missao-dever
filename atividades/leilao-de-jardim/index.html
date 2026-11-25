@@ -367,7 +367,7 @@ function qCount(Q,card){
     t.classList.add("tap");
     t.onclick=()=>{
       if(t.classList.contains("counted")) return;
-      c++; t.classList.add("counted"); t.textContent=t.textContent; sfx.tap(); say(String(c)); cnt.textContent=`Contei: ${c}`;
+      c++; t.classList.add("counted"); sfx.tap();
       if(c===n){
         cnt.textContent="Agora escolha o número!";
         const opts=shuffle([...new Set([n, n-1, n+1, n+2].filter(x=>x>1))].slice(0,3).concat([]));

@@ -389,33 +389,33 @@ const EST = {
   },
   contar(e){
     const itens=e.itens||Array(e.total).fill(e.emoji);
-    const el=h(`<div class="stim"><div class="grid" style="grid-template-columns:repeat(${e.cols},1fr)"></div><div class="helper">👆 Toque para contar</div></div>`);
+    const el=h(`<div class="stim"><div class="grid" style="grid-template-columns:repeat(${e.cols},1fr)"></div><div class="helper">👆 Toque em cada um para marcar o que já contou</div></div>`);
     const g=el.firstChild, hl=el.lastChild; let c=0;
     itens.forEach(em=>{ const b=h(`<button class="it" aria-label="contar">${em}</button>`);
-      b.onclick=()=>{ if(b.classList.contains("done")) return; c++; b.classList.add("done"); b.appendChild(h(`<span class="num">${c}</span>`)); sfx.tap(); say(String(c)); hl.textContent=`Contei: ${c}`; if(c===itens.length) hl.textContent=`Contei tudo: ${c}! 🎉`; };
+      b.onclick=()=>{ b.classList.toggle("done"); sfx.tap(); };
       g.appendChild(b); });
     return el;
   },
   riscar(e){
-    const el=h(`<div class="stim"><div class="sub">${e.acao}</div><div class="grid" style="grid-template-columns:repeat(${e.cols},1fr);max-width:340px"></div><div class="helper">Riscadas: 0 · Sobraram: ${e.total}</div></div>`);
+    const el=h(`<div class="stim"><div class="sub">${e.acao}</div><div class="grid" style="grid-template-columns:repeat(${e.cols},1fr);max-width:340px"></div><div class="helper">Riscadas: 0</div></div>`);
     const g=el.children[1], hl=el.children[2];
     for(let i=0;i<e.total;i++){ const b=h(`<button class="it" aria-label="riscar">${e.emoji}</button>`);
-      b.onclick=()=>{ b.classList.toggle("crossed"); sfx.tap(); const r=g.querySelectorAll(".crossed").length; hl.textContent=`Riscadas: ${r} · Sobraram: ${e.total-r}`; say(String(r)); };
+      b.onclick=()=>{ b.classList.toggle("crossed"); sfx.tap(); const r=g.querySelectorAll(".crossed").length; hl.textContent=`Riscadas: ${r}`; say(String(r)); };
       g.appendChild(b); }
     return el;
   },
   dezenas(e){
-    const el=h(`<div class="stim"><div class="trays"></div><div class="helper">Cada bandeja tem 10 salgados. Toque nelas!</div></div>`);
+    const el=h(`<div class="stim"><div class="trays"></div><div class="helper">Cada bandeja tem 1 dezena. Toque para marcar as que já contou.</div></div>`);
     const g=el.firstChild, hl=el.lastChild; let c=0;
     for(let i=0;i<e.n;i++){ const t=h(`<button class="tray" aria-label="bandeja de 10">${"<i></i>".repeat(10)}</button>`);
-      t.onclick=()=>{ if(t.classList.contains("done")) return; c++; t.classList.add("done"); t.appendChild(h(`<span class="tag">${c*10}</span>`)); sfx.tap(); say(String(c*10)); hl.textContent=`Contei: ${c*10}`; };
+      t.onclick=()=>{ t.classList.toggle("done"); sfx.tap(); };
       g.appendChild(t); }
     return el;
   },
   dourado(e){
-    const el=h(`<div class="stim"><div class="dourado"></div><div class="helper">Toque nas barras e nos cubinhos</div></div>`);
+    const el=h(`<div class="stim"><div class="dourado"></div><div class="helper">Toque para marcar o que já contou</div></div>`);
     const g=el.firstChild, hl=el.lastChild; let total=0; const used=new Set();
-    const add=(node,v,key)=>{ node.onclick=()=>{ if(used.has(key)) return; used.add(key); total+=v; node.style.outline="3px solid var(--leaf)"; sfx.tap(); say(String(total)); hl.textContent=`Contei: ${total}`; }; };
+    const add=(node,v,key)=>{ node.onclick=()=>{ if(used.has(key)) return; used.add(key); node.style.outline="3px solid var(--leaf)"; sfx.tap(); }; };
     for(let i=0;i<e.dez;i++){ const b=h(`<button class="bar10" aria-label="barra de dez">${"<i></i>".repeat(10)}</button>`); add(b,10,"b"+i); g.appendChild(b); }
     const cubes=h(`<div class="cubes"></div>`);
     for(let i=0;i<e.un;i++){ const c=h(`<button class="cube" aria-label="cubinho"><i></i></button>`); add(c,1,"c"+i); cubes.appendChild(c); }
