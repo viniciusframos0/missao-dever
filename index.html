@@ -66,7 +66,6 @@ footer{color:var(--ink2);font-size:.88rem;font-weight:600;text-align:center;line
 @media (max-width:420px){ .card{grid-template-columns:auto 1fr} .go{grid-column:1/-1;text-align:center} }
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
-<script src="atividades.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -82,8 +81,7 @@ footer{color:var(--ink2);font-size:.88rem;font-weight:600;text-align:center;line
 // contador de acessos (GoatCounter: sem cookies, sem dados pessoais)
 (function(){ try{ const s=document.createElement("script"); s.async=true; s.src="https://gc.zgo.at/count.js"; s.dataset.goatcounter="https://missaodever.goatcounter.com/count"; document.head.appendChild(s); }catch(e){} })();
 
-const M = window.MISSOES || [];
-const subs = ["Todas", ...new Set(M.map(m=>m.disciplina))];
+let M = [], subs = ["Todas"];
 let atual = "Todas";
 const $f = document.getElementById("filters"), $l = document.getElementById("list");
 function render(){
@@ -101,7 +99,13 @@ function render(){
       <span class="go" style="background:${m.cor}">Jogar ▶</span>
     </a>`).join("") : `<div class="empty">Nenhuma missão nesta disciplina ainda.</div>`;
 }
-render();
+// carrega a lista sempre atualizada (sem usar cópia antiga do navegador)
+const sc=document.createElement("script");
+sc.src="atividades.js?t="+Date.now();
+sc.onload=()=>{ M=window.MISSOES||[]; subs=["Todas",...new Set(M.map(m=>m.disciplina))]; render(); };
+sc.onerror=()=>{ $l.innerHTML='<div class="empty">Não foi possível carregar as missões. Verifique a internet e atualize a página.</div>'; };
+document.head.appendChild(sc);
+$l.innerHTML='<div class="empty">Carregando missões…</div>';
 </script>
 </body>
 </html>
