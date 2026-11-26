@@ -204,6 +204,7 @@ pre{background:#22303a;color:#e4f1f8;border-radius:12px;padding:12px;font-size:.
 @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 .hub{display:inline-block;font-family:var(--display);font-weight:700;font-size:.95rem;color:var(--ink2);text-decoration:none;background:var(--card);padding:4px 12px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.06);align-self:flex-start}
+.voz{background:var(--card);width:44px;height:44px;border-radius:50%;font-size:1.25rem;box-shadow:0 3px 0 rgba(0,0,0,.08);flex:none;border:0;cursor:pointer;display:grid;place-items:center;padding:0}
 </style>
 
 </head>
@@ -278,10 +279,17 @@ const unlockedIdx=()=>{ let i=0; while(i<F.length && save.stars[F[i].id]) i++; r
 let ac=null;
 function tone(fr,dur=.12,type="sine",gap=.09){ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); fr.forEach((f,i)=>{ const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+i*gap; o.type=type;o.frequency.value=f; g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.22,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+dur+.1); o.connect(g).connect(ac.destination); o.start(t); o.stop(t+dur+.15); }); }catch(e){} }
 const sfx={ok:()=>tone([660,880,1100]),no:()=>tone([300,220],.15,"triangle",.12),tap:()=>tone([520],.05,"triangle"),win:()=>tone([523,659,784,1046,1318],.16,"sine",.11)};
+let mudo=false; try{ mudo=localStorage.getItem("missao-voz")==="off"; }catch(e){}
+function vozBtn(){
+  const b=document.createElement("button"); b.className="voz";
+  const upd=()=>{ const t=mudo?"Ligar a voz":"Desligar a voz"; b.textContent=mudo?"🔇":"🗣️"; b.setAttribute("aria-label",t); b.title=t; };
+  b.onclick=()=>{ mudo=!mudo; try{ localStorage.setItem("missao-voz",mudo?"off":"on"); }catch(e){} if(mudo){ try{speechSynthesis.cancel()}catch(e){} } else say("Voz ligada!"); upd(); };
+  upd(); return b;
+}
 let voice=null;
 function pickVoice(){ try{ const v=speechSynthesis.getVoices(); voice=v.find(x=>/pt-BR/i.test(x.lang))||v.find(x=>/^pt/i.test(x.lang))||null; }catch(e){} }
 try{ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }catch(e){}
-function say(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang="pt-BR"; if(voice)u.voice=voice; u.rate=.9; u.pitch=1.1; speechSynthesis.speak(u);}catch(e){} }
+function say(t,force){ if(mudo&&!force) return; try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang="pt-BR"; if(voice)u.voice=voice; u.rate=.9; u.pitch=1.1; speechSynthesis.speak(u);}catch(e){} }
 
 const $app=document.getElementById("app");
 const h=html=>{ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstElementChild; };
@@ -439,13 +447,14 @@ function showMap(){
   $app.appendChild(h(`<a class="hub" href="../../" aria-label="Voltar para todas as missões">← Missões</a>`));
   const top=h(`<div class="top"><div class="brand"><span style="font-size:2rem">🍊</span><h1>Pomar dos Números</h1></div><div style="display:flex;gap:8px"><div class="pill">⭐ ${totalStars()}</div><button class="adult-btn">👨‍👩‍👦 Adulto</button></div></div>`);
   top.querySelector(".adult-btn").onclick=gate;
+  top.lastElementChild.prepend(vozBtn());
   $app.appendChild(top);
   $app.appendChild(h(`<div class="homework"><span>${ATIVIDADE.titulo}</span><span><b>${ATIVIDADE.serie}</b> · 20 questões</span></div>`));
   const left=F.length-u;
   const msg = allDone ? "Você colheu o pomar inteiro! Toque na cesta 🧺 para ver suas frutas."
             : u===0 ? "Oi! Sou a Tuca. Cada fruta é um desafio de matemática. Toque na que está pulando!"
             : `Muito bem! Falta${left>1?"m":""} ${left} fruta${left>1?"s":""} no pomar.`;
-  const m=h(`<div class="mascot"><div class="turtle">🐢</div><div class="bubble">${msg}</div></div>`); m.onclick=()=>say(msg);
+  const m=h(`<div class="mascot"><div class="turtle">🐢</div><div class="bubble">${msg}</div></div>`); m.onclick=()=>say(msg,true);
   $app.appendChild(m);
   const path=h(`<div class="path"></div>`);
   F.forEach((f,i)=>{
@@ -468,6 +477,7 @@ function frame(){
   $app.innerHTML="";
   const bar=h(`<div class="lbar"><button class="x" aria-label="Sair">✕</button><div class="prog"><i></i></div><div class="pill">${P.icone}</div></div>`);
   bar.querySelector(".x").onclick=()=>{ try{speechSynthesis.cancel()}catch(e){} showMap(); };
+  bar.insertBefore(vozBtn(), bar.lastElementChild);
   $app.appendChild(bar);
   requestAnimationFrame(()=>bar.querySelector("i").style.width=(qi/P.q.length*100)+"%");
   const w=h(`<div style="display:flex;flex-direction:column;gap:14px"></div>`); $app.appendChild(w); return w;
@@ -475,7 +485,7 @@ function frame(){
 function intro(){
   const w=frame();
   w.appendChild(h(`<div class="center"><div class="trophy">${P.icone}</div><h2 style="font-size:2rem">${P.nome}</h2></div>`));
-  const m=h(`<div class="mascot"><div class="turtle">🐢</div><div class="bubble">${P.intro}</div></div>`); m.onclick=()=>say(P.intro);
+  const m=h(`<div class="mascot"><div class="turtle">🐢</div><div class="bubble">${P.intro}</div></div>`); m.onclick=()=>say(P.intro,true);
   w.appendChild(m);
   const b=h(`<button class="big sun">Vamos lá! ▶</button>`); b.onclick=()=>{ sfx.tap(); question(); };
   w.appendChild(b); say(P.intro);
@@ -486,7 +496,7 @@ function question(){
   const card=h(`<div class="qcard"></div>`); w.appendChild(card);
   card.appendChild(h(`<div class="qtag">QUESTÃO ${String(q.n).padStart(2,"0")} DA FOLHA</div>`));
   const head=h(`<div class="qhead"><div class="txt"><p>${q.enun}</p><h2>${q.perg}</h2></div><button class="speak" aria-label="Ouvir">🔊</button></div>`);
-  head.querySelector(".speak").onclick=()=>say(q.enun+" "+q.perg);
+  head.querySelector(".speak").onclick=()=>say(q.enun+" "+q.perg,true);
   card.appendChild(head);
   const stim=EST[q.est.tipo](q.est,q); if(stim) card.appendChild(stim);
   const visual=q.ops.some(o=>typeof o!=="string"), long=q.ops.some(o=>typeof o==="string"&&o.length>10);
@@ -508,6 +518,7 @@ function question(){
 const fb=document.getElementById("fb"),fbT=document.getElementById("fbT"),fbP=document.getElementById("fbP"),fbB=document.getElementById("fbB");
 function hideFb(){ fb.className="fb"; }
 function right(){
+  clearTimeout(wrong.t);
   sfx.ok(); const p=rnd(PRAISE); fbT.textContent="🎉 "+p; fbP.textContent=""; fb.className="fb ok show"; fbB.hidden=false; say(p);
   fbB.onclick=()=>{ sfx.tap(); qi++; qi<P.q.length?question():finishPhase(); };
 }
