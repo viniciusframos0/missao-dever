@@ -553,9 +553,13 @@ function showHarvest(){
 /* ---------- portão dos pais + área do adulto ---------- */
 function gate(){
   try{speechSynthesis.cancel()}catch(e){}
-  const g=h(`<div class="gate"><div class="qcard"><h2>Área dos pais e professores</h2><p style="margin:0;font-weight:700;color:var(--ink2)">Para entrar, responda: quanto é 7 × 8?</p><div class="opts" style="grid-template-columns:repeat(3,1fr)"></div><button class="reset">Cancelar</button></div></div>`);
+  // conta aleatória de tabuada (6 a 9), com 3 opções erradas parecidas
+  const a=6+Math.floor(Math.random()*4), b=6+Math.floor(Math.random()*4), certo=a*b;
+  const erradas=[...new Set([certo+a,certo-a,certo+b,certo-b,certo+1,certo-1,certo+10,certo-10])].filter(n=>n>0&&n!==certo).sort(()=>Math.random()-.5).slice(0,3);
+  const ops=[certo,...erradas].sort(()=>Math.random()-.5);
+  const g=h(`<div class="gate"><div class="qcard"><h2>Área dos pais e professores</h2><p style="margin:0;font-weight:700;color:var(--ink2)">Para entrar, responda: quanto é ${a} × ${b}?</p><div class="opts"></div><button class="reset">Cancelar</button></div></div>`);
   const o=g.querySelector(".opts");
-  [54,56,63].forEach(n=>{ const b=h(`<button class="opt" style="justify-content:center">${n}</button>`); b.onclick=()=>{ g.remove(); n===56?showAdult():showMap(); }; o.appendChild(b); });
+  ops.forEach(n=>{ const bt=h(`<button class="opt" style="justify-content:center">${n}</button>`); bt.onclick=()=>{ g.remove(); n===certo?showAdult():showMap(); }; o.appendChild(bt); });
   g.querySelector(".reset").onclick=()=>g.remove();
   document.body.appendChild(g);
 }
