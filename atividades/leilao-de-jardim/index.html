@@ -153,6 +153,32 @@ td:first-child{text-align:left;font-weight:800}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 .hub{display:inline-block;font-family:var(--display);font-weight:700;font-size:.95rem;color:var(--ink2);text-decoration:none;background:var(--card);padding:4px 12px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.06);align-self:flex-start}
 .voz{background:var(--card);width:44px;height:44px;border-radius:50%;font-size:1.25rem;box-shadow:0 3px 0 rgba(0,0,0,.08);flex:none;border:0;cursor:pointer;display:grid;place-items:center;padding:0}
+.folhacard{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;padding:10px 14px;box-shadow:0 4px 0 rgba(0,0,0,.07);text-align:left;font-family:var(--body);border:3px solid transparent;cursor:pointer;width:100%}
+.folhacard.tem{border-color:var(--leaf-l)}
+.folhacard .fi{font-size:1.9rem;flex:none}
+.folhacard b{display:block;font-family:var(--display);font-size:1.15rem;color:var(--ink)}
+.folhacard small{display:block;color:var(--ink2);font-weight:700;font-size:.9rem}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(36,50,61,.55);display:flex;align-items:center;justify-content:center;padding:calc(12px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px))}
+.mbox{position:relative;background:var(--card);border-radius:24px;width:100%;max-width:560px;max-height:100%;overflow:auto;padding:18px 16px}
+.mclose{position:sticky;top:0;float:right;width:40px;height:40px;border-radius:50%;background:var(--sky);font-size:1.1rem;border:0;cursor:pointer;z-index:2}
+.mcont{display:flex;flex-direction:column;gap:12px}
+.mcont h2{font-size:1.5rem;padding-right:44px}
+.mnote{margin:0;color:var(--ink2);font-weight:700;line-height:1.4}
+.mlabel{font-weight:800;font-size:.95rem}
+.mmsg{margin:0;color:var(--petal-d);font-weight:800;min-height:1.2em}
+.fotobtn{display:block;text-align:center;cursor:pointer;font-family:var(--display)}
+.prev{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.prev img{max-height:220px;border-radius:12px;border:3px solid #e3eaef}
+textarea{width:100%;border:3px solid #dbe5ec;border-radius:14px;padding:10px;font-family:var(--body);font-size:1.05rem;font-weight:600;color:var(--ink);resize:vertical}
+textarea:focus-visible{outline:3px solid var(--leaf);outline-offset:1px}
+.mrow{display:flex;gap:10px;align-items:center;justify-content:flex-end}
+.mrow .big{width:auto;padding:12px 28px}
+.linkbtn{background:none;border:0;font-family:var(--body);font-weight:800;font-size:1rem;color:var(--leaf-d);text-decoration:underline;padding:6px;cursor:pointer;align-self:center}
+.linkbtn.danger{color:var(--petal-d)}
+.fotowrap{overflow:auto;border-radius:14px;border:3px solid #e3eaef;max-height:65vh}
+.fotowrap img{display:block;width:100%;cursor:zoom-in}
+.fotowrap.zoom img{width:220%;max-width:none;cursor:zoom-out}
+.folhatxt{white-space:pre-wrap;font-size:1.35rem;line-height:1.6;font-weight:700;background:#fffbea;border-radius:14px;padding:14px;border:3px dashed var(--sun)}
 </style>
 
 </head>
@@ -259,6 +285,67 @@ function petals(n=24){
     document.body.appendChild(p); setTimeout(()=>p.remove(),5000); }
 }
 
+// ---------- minha folha: foto ou texto do dever, salvo só neste aparelho ----------
+const FOLHA_KEY="missao-folha-leilao-de-jardim";
+function folhaGet(){ try{ return JSON.parse(localStorage.getItem(FOLHA_KEY))||{}; }catch(e){ return {}; } }
+function folhaSet(f){ try{ if(!f.foto && !f.texto){ localStorage.removeItem(FOLHA_KEY); } else localStorage.setItem(FOLHA_KEY, JSON.stringify(f)); return true; }catch(e){ return false; } }
+const temFolha=()=>{ const f=folhaGet(); return !!(f.foto||f.texto); };
+function comprimir(file){
+  return new Promise((ok,erro)=>{ const img=new Image(), url=URL.createObjectURL(file);
+    img.onload=()=>{ const max=1400, k=Math.min(1,max/Math.max(img.width,img.height)), c=document.createElement("canvas");
+      c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url); ok(c.toDataURL("image/jpeg",.72)); };
+    img.onerror=()=>{ URL.revokeObjectURL(url); erro(); }; img.src=url; });
+}
+function modal(conteudo){
+  const m=h(`<div class="modal" role="dialog" aria-modal="true"><div class="mbox"><button class="mclose" aria-label="Fechar">✕</button></div></div>`);
+  m.querySelector(".mbox").appendChild(conteudo);
+  const fechar=()=>{ try{speechSynthesis.cancel()}catch(e){} m.remove(); };
+  m.querySelector(".mclose").onclick=fechar; m.onclick=e=>{ if(e.target===m) fechar(); };
+  document.body.appendChild(m); return {fechar};
+}
+function verFolha(){
+  const f=folhaGet(), c=h(`<div class="mcont"><h2>📄 Minha folha</h2></div>`);
+  if(f.foto){ const w=h(`<div class="fotowrap"><img src="${f.foto}" alt="Foto da folha do dever"></div>`); const im=w.firstChild; im.onclick=()=>w.classList.toggle("zoom"); c.appendChild(w); c.appendChild(h(`<p class="mnote">Toque na foto para aumentar ou diminuir.</p>`)); }
+  if(f.texto){ const t=h(`<div class="folhatxt"></div>`); t.textContent=f.texto; c.appendChild(t);
+    const ouvir=h(`<button class="big sun">🔊 Ouvir o texto</button>`); ouvir.onclick=()=>say(f.texto,true); c.appendChild(ouvir); }
+  const ed=h(`<button class="linkbtn">✏️ Trocar foto ou texto</button>`); c.appendChild(ed);
+  const mm=modal(c); ed.onclick=()=>{ mm.fechar(); editarFolha(); };
+}
+function editarFolha(){
+  const f=folhaGet();
+  const c=h(`<div class="mcont"><h2>📄 Folha do dever</h2>
+    <p class="mnote">Para a criança ler o texto da atividade no celular. <b>Fica salvo só neste aparelho</b> e não vai para a internet.</p>
+    <label class="big fotobtn" for="folhaFile">📷 Tirar ou escolher foto</label>
+    <input type="file" id="folhaFile" accept="image/*" hidden>
+    <div class="prev"></div>
+    <label class="mlabel" for="folhaTxt">Ou digite o texto da folha. Assim o jogo consegue ler em voz alta.</label>
+    <textarea id="folhaTxt" rows="7" placeholder="Digite aqui o texto que está na folha…"></textarea>
+    <p class="mmsg" aria-live="polite"></p>
+    <div class="mrow"><button class="linkbtn danger" ${(f.foto||f.texto)?"":"hidden"}>Apagar</button><button class="big salvar">Salvar</button></div></div>`);
+  let foto=f.foto||"";
+  const prev=c.querySelector(".prev"), msg=c.querySelector(".mmsg"), txt=c.querySelector("#folhaTxt");
+  txt.value=f.texto||"";
+  const mostra=()=>{ prev.innerHTML=foto?`<img src="${foto}" alt="Prévia da foto"><button class="linkbtn danger">Remover foto</button>`:""; const r=prev.querySelector("button"); if(r) r.onclick=()=>{ foto=""; mostra(); }; };
+  mostra();
+  c.querySelector("#folhaFile").onchange=async e=>{ const file=e.target.files[0]; if(!file) return; msg.textContent="Preparando a foto…";
+    try{ foto=await comprimir(file); msg.textContent=""; mostra(); }catch(err){ msg.textContent="Não consegui abrir essa imagem. Tente outra foto."; } };
+  const mm=modal(c);
+  c.querySelector(".salvar").onclick=()=>{ const novo={foto, texto:txt.value.trim()};
+    if(!novo.foto && !novo.texto){ msg.textContent="Adicione uma foto ou digite o texto antes de salvar."; return; }
+    if(!folhaSet(novo)){ msg.textContent="A foto ficou grande demais para guardar neste aparelho. Tente uma foto mais de perto, só do texto."; return; }
+    sfx.ok(); mm.fechar(); showMap(); };
+  c.querySelector(".mrow .danger").onclick=e=>{ const b=e.currentTarget; if(!b.dataset.c){ b.dataset.c=1; b.textContent="Toque de novo para apagar"; return; } folhaSet({}); mm.fechar(); showMap(); };
+}
+function folhaCard(){
+  if(temFolha()){ const b=h(`<button class="folhacard tem"><span class="fi">📄</span><span><b>Ver minha folha</b><small>Ler o poema no celular</small></span></button>`); b.onclick=()=>{ sfx.tap(); verFolha(); }; return b; }
+  const b=h(`<button class="folhacard"><span class="fi">📷</span><span><b>Adicionar a folha do dever</b><small>Para um adulto: foto ou texto da atividade</small></span></button>`); b.onclick=()=>editarFolha(); return b;
+}
+function folhaBotao(pequeno){
+  if(temFolha()){ const b=h(`<button class="${pequeno?"linkbtn":"big"}">📄 Ver o poema da minha folha</button>`); b.onclick=()=>{ sfx.tap(); verFolha(); }; return b; }
+  return h(`<p class="hint">📄 Leia o poema na sua folha. Se quiser ler no celular, peça a um adulto para adicionar a foto da folha.</p>`);
+}
+
 // ---------- tela: trilha ----------
 function showMap(){
   hideFb();
@@ -269,6 +356,7 @@ function showMap(){
   $app.appendChild(h(`<div class="top"><div class="brand"><span style="font-size:2rem">🌻</span><h1>Jardim das Letras</h1></div><div class="pill">⭐ ${totalStars()}</div></div>`));
   { const top=$app.lastElementChild, pill=top.lastElementChild, g=document.createElement("div"); g.style.cssText="display:flex;gap:8px;align-items:center;flex:none"; top.insertBefore(g,pill); g.append(vozBtn(),pill); pill.style.whiteSpace="nowrap"; }
   $app.appendChild(h(`<div class="homework"><span>Dever de casa · <b>Língua Portuguesa</b></span><span><b>1º dia</b> · Leilão de Jardim</span></div>`));
+  $app.appendChild(folhaCard());
   const msg = allDone ? "Você terminou o jardim todo! Toque em 🏆 para ver suas respostas e copiar na folha."
             : u===0 ? "Oi! Eu sou a Tuca. Pegue sua folha e leia o poema. Depois toque na flor que está pulando!"
             : `Muito bem! Falta${LEVELS.length-u>1?"m":""} ${LEVELS.length-u} flor${LEVELS.length-u>1?"es":""} para terminar o dever.`;
@@ -316,6 +404,7 @@ function intro(){
   w.appendChild(h(`<div class="center"><div class="trophy">${L.icon}</div><h2 style="font-size:2rem">${L.name}</h2></div>`));
   const m=h(`<div class="mascot"><div class="turtle">🐢</div><div class="bubble">${L.intro}</div></div>`); m.onclick=()=>say(L.intro,true);
   w.appendChild(m);
+  if(L.id==="poema") w.appendChild(folhaBotao());
   const b=h(`<button class="big sun">Vamos lá! ▶</button>`); b.onclick=()=>{ sfx.tap(); question(); };
   w.appendChild(b);
   say(L.intro);
@@ -352,7 +441,7 @@ function choiceButtons(card, opts, answer, cls, onRight, speakEach){
 }
 function qChoice(Q,card){
   card.appendChild(qHead(Q.q));
-  card.appendChild(h(`<p class="hint">📄 Olhe na sua folha se precisar!</p>`));
+  card.appendChild(folhaBotao(true));
   choiceButtons(card, Q.opts, Q.a, "", null, true);
   say(Q.q);
 }
